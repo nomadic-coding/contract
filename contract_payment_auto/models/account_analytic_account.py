@@ -104,6 +104,11 @@ class AccountAnalyticAccount(models.Model):
                 )
             else:
                 # Success
+                if transaction.acquirer_id.journal_id:
+                    invoice.with_context(tx_currency_id=transaction.currency_id.id).pay_and_reconcile(
+                        transaction.acquirer_id.journal_id, pay_amount=invoice.amount_total)
+                    if invoice.payment_ids:
+                        invoice.payment_ids[0].payment_transaction_id = transaction
                 return True
 
         except Exception:
